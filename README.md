@@ -1,12 +1,11 @@
 Automation Creation Orthotics
-📖 Descrição
-Este projeto tem como objetivo automatizar processos relacionados ao desenvolvimento e personalização de órteses. Ele busca integrar ferramentas digitais para otimizar a criação, reduzir erros manuais e acelerar o fluxo de trabalho em clínicas, laboratórios e indústrias de dispositivos médicos.
+
+
+Descrição
+Este projeto tem como objetivo automatizar processos de desenvolvimento e modelagem de órteses no Blender. Ele busca integrar ferramentas digitais para otimizar a criação e acelerar o fluxo de trabalho no laboratório.
 
 Funcionalidades
 - Automação de etapas de modelagem de órteses.
-- Integração com softwares CAD/CAM.
-- Geração de relatórios e documentação técnica.
-- Suporte a diferentes tipos de dispositivos ortopédicos.
 
 Instalação
 Clone o repositório:
