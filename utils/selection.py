@@ -14,7 +14,7 @@ def create_parent_deform(armature):
     mesh = [obj for obj in bpy.data.objects if obj.type == 'MESH'][0]
 
     if mesh and mesh.type != "MESH":
-        raise ValueError("O objeto deve ser do tipo Mesh para associar à armature. ")
+        raise ValueError("O objeto deve ser do tipo Mesh para associar Ã  armature. ")
 
     mesh.select_set(True)
     armature.select_set(True)

@@ -7,7 +7,7 @@ def align_to_axis(axis: str):
     try:
         obj = bpy.context.active_object
         if not obj or obj.type != 'MESH':
-            raise Exception("Objeto ativo inválido")
+            raise Exception("Objeto ativo invÃ¡lido")
 
         verts = obj.data.vertices
         if not verts:

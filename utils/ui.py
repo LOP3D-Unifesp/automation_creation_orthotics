@@ -9,16 +9,16 @@ def remove_depsgraph():
 
 
 def detect_import(depsgraph):
-    print("Mudança detectada no depsgraph.")
+    print("MudanÃ§a detectada no depsgraph.")
 
     limbs = bpy.data.objects
     
-    #Verifica se existe apenas um objeto e irá ativa-lo
+    #Verifica se existe apenas um objeto e irÃ¡ ativa-lo
     if len(limbs) == 1:
         activated_an_object(limbs[0])
         
     else:
-        #Caso tenha mais que um objeto, o usuário deve selecionar o que deseja fazer alterações para EDIT MODE
+        #Caso tenha mais que um objeto, o usuÃ¡rio deve selecionar o que deseja fazer alteraÃ§Ãµes para EDIT MODE
         pass
 
 
@@ -33,7 +33,7 @@ def is_scene_empty(geometry_types: dict):
 
 
 def add_handler_depsgraph(geometry_types: dict):        
-    # Evita adicionar o mesmo handler várias vezes
+    # Evita adicionar o mesmo handler vÃ¡rias vezes
     if detect_import not in bpy.app.handlers.depsgraph_update_post and is_scene_empty(geometry_types):
         bpy.app.handlers.depsgraph_update_post.append(detect_import)
 
@@ -42,7 +42,7 @@ def activated_an_object():
 
     obj = bpy.context.view_layer.objects.active
 
-    # Já existe objeto ativo
+    # JÃ¡ existe objeto ativo
     if obj is not None:
         return
 
@@ -55,15 +55,15 @@ def activated_an_object():
     # Mais de um objeto
     if len(objs) > 1:
         raise Exception(
-            "Há mais de um objeto na cena. "
+            "HÃ¡ mais de um objeto na cena. "
             "Ative apenas um objeto para continuar.\n"
-            "Vá para o Object Mode e clique no objeto desejado."
+            "VÃ¡ para o Object Mode e clique no objeto desejado."
         )
 
 
     single_obj = objs[0]
 
-    # Limpa seleção
+    # Limpa seleÃ§Ã£o
     bpy.ops.object.select_all(action='DESELECT')
 
     # Seleciona e ativa
@@ -77,6 +77,7 @@ def activated_an_object():
 def chance_for_mode(mode: str):
     # Troca o modo ativo do objeto selecionado
     bpy.ops.object.mode_set(mode=mode)
+
 
 
 

@@ -78,3 +78,4 @@ def create_outhers_bones(edit_bones, tail_pos, previous_bone, index=1):
     bone.use_connect = True
 
     return bone
+

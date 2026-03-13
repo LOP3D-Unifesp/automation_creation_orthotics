@@ -6,7 +6,7 @@ from ..utils.selection import change_mode, create_parent_deform
 
 class ACO_OT_creation_bones(bpy.types.Operator):
     bl_idname = "aco.creation_bones"
-    bl_label = "Criação de Bones"
+    bl_label = "CriaÃ§Ã£o de Bones"
 
     @object_has_to_be_activated
     def execute(self, context):
@@ -32,6 +32,7 @@ class ACO_OT_creation_bones(bpy.types.Operator):
             bpy.ops.aco.alert_error_popup('INVOKE_DEFAULT', message=e)
 
         return {'FINISHED'}
+
 
 
 

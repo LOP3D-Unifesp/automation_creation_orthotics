@@ -9,7 +9,7 @@ def detect_gaps_activated_object():
 
     try:
 
-        #Detectar arestas abertas ou regiões problemáticas da malha
+        #Detectar arestas abertas ou regiÃµes problemÃ¡ticas da malha
         bpy.ops.mesh.select_non_manifold()
 
         sel = [v for v in bpy.context.object.data.vertices if v.select]
@@ -26,15 +26,15 @@ def fill_in_the_blanks(obj: Object):
     blanks = detect_gaps_activated_object()
 
     if not blanks:
-        #Não existe lacunas no objeto deve notificar o usuário
+        #NÃ£o existe lacunas no objeto deve notificar o usuÃ¡rio
         return
 
 
     # Criar um bmesh a partir da malha atual
     bm = bmesh.from_edit_mesh(obj.data)
 
-    # Suponha que você tenha uma lista de arestas selecionadas para os loops que você deseja preencher.
-    # Essas arestas devem estar conectadas de forma adequada para a operação grid_fill funcionar.
+    # Suponha que vocÃª tenha uma lista de arestas selecionadas para os loops que vocÃª deseja preencher.
+    # Essas arestas devem estar conectadas de forma adequada para a operaÃ§Ã£o grid_fill funcionar.
     # Aqui, vamos pegar as arestas selecionadas como exemplo.
     edges = [e for e in bm.edges if e.select]
 

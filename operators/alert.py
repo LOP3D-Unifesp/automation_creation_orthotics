@@ -8,7 +8,7 @@ class ACO_OT_alert_error_popup(bpy.types.Operator):
 
     message: bpy.props.StringProperty(
         name="Message",
-        default="Ocorreu um erro ao tentar executar essa ação!"
+        default="Ocorreu um erro ao tentar executar essa aÃ§Ã£o!"
     )
 
     def invoke(self, context, event):
@@ -31,7 +31,7 @@ class ACO_OT_alert_info_popup(bpy.types.Operator):
 
     message_info: bpy.props.StringProperty(
         name="Information Message",
-        default = "A ação foi executada com sucesso!"
+        default = "A aÃ§Ã£o foi executada com sucesso!"
     )
 
     def invoke(self, context, event):
@@ -45,3 +45,4 @@ class ACO_OT_alert_info_popup(bpy.types.Operator):
         self.report({'INFO'}, "Popup de Info Fechado.")
         return {'FINISHED'}
     
+

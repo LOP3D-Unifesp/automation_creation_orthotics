@@ -20,11 +20,39 @@ CLASSES = PROPERTY_CLASSES + OPERATOR_CLASSES + PANEL_CLASSES
 def _register_scene_properties():
     bpy.types.Scene.vertices = bpy.props.IntProperty(default=0)
     bpy.types.Scene.faces = bpy.props.IntProperty(default=0)
+    bpy.types.Scene.decimate_collapse_ratio = bpy.props.FloatProperty(
+        name="Collapse Ratio",
+        description="Proporção de faces para manter no modo Collapse",
+        default=0.5,
+        min=0.0,
+        max=1.0,
+    )
+    bpy.types.Scene.decimate_unsubdivide_iterations = bpy.props.IntProperty(
+        name="Un-Subdivide Iterations",
+        description="Quantidade de iterações no modo Un-Subdivide",
+        default=1,
+        min=1,
+        max=100,
+    )
+    bpy.types.Scene.decimate_planar_angle = bpy.props.IntProperty(
+        name="Planar Angle",
+        description="Ângulo em graus usado na decimação Planar",
+        default=10,
+        min=0,
+        max=180,
+    )
     bpy.types.Scene.align_limb_props = bpy.props.PointerProperty(type=AlignAxisProperties)
 
 
 def _unregister_scene_properties():
-    for attribute_name in ("align_limb_props", "faces", "vertices"):
+    for attribute_name in (
+        "align_limb_props",
+        "decimate_planar_angle",
+        "decimate_unsubdivide_iterations",
+        "decimate_collapse_ratio",
+        "faces",
+        "vertices",
+    ):
         if hasattr(bpy.types.Scene, attribute_name):
             delattr(bpy.types.Scene, attribute_name)
 
@@ -45,3 +73,4 @@ def unregister():
 
 if __name__ == "__main__":
     register()
+

@@ -10,7 +10,7 @@ class ACO_OT_align_limb_axis(bpy.types.Operator):
     def execute(self, context):
         scene = context.scene
         
-        #Obtem o eixo escolhido pelo botão
+        #Obtem o eixo escolhido pelo botÃ£o
         axis = scene.align_limb_props.axis
 
         obj = context.active_object
@@ -20,7 +20,7 @@ class ACO_OT_align_limb_axis(bpy.types.Operator):
             # Ativa o objeto
             activate_object(obj)      
 
-            # Object → Edit
+            # Object â†’ Edit
             change_mode("OBJECT")
             change_mode("EDIT") 
 

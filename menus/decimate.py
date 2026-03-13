@@ -40,3 +40,4 @@ class ACO_MT_decimate_planar(bpy.types.Menu):
         
 
 
+

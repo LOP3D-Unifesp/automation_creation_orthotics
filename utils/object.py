@@ -41,7 +41,7 @@ def centroid(verts, matrix_world):
 
     center_world = matrix_world @ mathutils.Vector(center_local)
 
-    print(f"O centróide é: {center_world}")
+    print(f"O centrÃ³ide Ã©: {center_world}")
 
     return center_world
 
