@@ -1,29 +1,26 @@
 import bpy
+
 from .ui import activated_an_object
 from .ui import chance_for_mode
 
 
-def decimate_by_type(type: str, parameter):
+def decimate_by_type(decimate_type: str, parameter):
     activated_an_object()
-
-    # Garante OBJECT MODE
     chance_for_mode("OBJECT")
 
     obj = bpy.context.view_layer.objects.active
-
     mod = obj.modifiers.new(name="Decimate", type='DECIMATE')
+    mod.decimate_type = decimate_type
 
-    mod.decimate_type = type
-
-    if type == 'COLLAPSE':
+    if decimate_type == 'COLLAPSE':
         mod.ratio = parameter
         mod.use_collapse_triangulate = True
-    elif type == 'DISSOLVE':
+    elif decimate_type == 'DISSOLVE':
         import math
 
         mod.angle_limit = math.radians(parameter)
         mod.use_dissolve_boundaries = False
-    elif type == 'UNSUBDIV':
+    elif decimate_type == 'UNSUBDIV':
         mod.iterations = parameter
 
     bpy.ops.object.modifier_apply(modifier=mod.name)
@@ -32,19 +29,16 @@ def decimate_by_type(type: str, parameter):
 def centroid(verts, matrix_world):
     import mathutils
 
-    # Soma as coordenadas locais
     sum_coords = [0.0, 0.0, 0.0]
     for v in verts:
         sum_coords[0] += v.co.x
         sum_coords[1] += v.co.y
         sum_coords[2] += v.co.z
 
-    # Centr�ide local
     center_local = []
-    for c in sum_coords:
-        center_local.append(c / len(verts))
+    for coordinate in sum_coords:
+        center_local.append(coordinate / len(verts))
 
-    # Centr�ide em WORLD
     center_world = matrix_world @ mathutils.Vector(center_local)
 
     print(f"O centróide é: {center_world}")
@@ -79,9 +73,7 @@ def create_bones_with_position(positions: list[int] = []):
     from .mesh import create_first_bone, create_new_armature, create_outhers_bones
 
     armature = create_new_armature()
-
     edit_bones = armature.data.edit_bones
-
     bone = create_first_bone(edit_bones=edit_bones, head_pos=positions[1], tail_pos=positions[0])
 
     size = len(positions) - 1
@@ -90,4 +82,3 @@ def create_bones_with_position(positions: list[int] = []):
         bone = create_outhers_bones(edit_bones=edit_bones, tail_pos=positions[index], previous_bone=bone, index=index)
 
     return armature
-

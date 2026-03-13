@@ -1,74 +1,46 @@
 bl_info = {
-    "name":"Orthosis Creation Automation",
-    "author":"Tamires Morais Rodrigues - LO&P 3D",
-    "version":(1, 0, 0),
-    "blender":(3, 0, 0),
-    "location":"View3D > Tools",
-    "description":"Automatizar o processo de criação de Órteses",
-    "category":"Mesh"
+    "name": "Orthosis Creation Automation",
+    "author": "Tamires Morais Rodrigues - LO&P 3D",
+    "version": (1, 0, 0),
+    "blender": (3, 0, 0),
+    "location": "View3D > Tools",
+    "description": "Automatizar o processo de criação de Órteses",
+    "category": "Mesh",
 }
 
 import bpy
-from .properties import AlignAxisProperties
-from .operators import ACO_OT_align_limb_axis, ACO_OT_decimate_un_subdivide, ACO_OT_decimate_collapse, ACO_OT_decimate_planar, ACO_OT_alert_error_popup, ACO_OT_alert_info_popup, ACO_OT_number_of_vertices_and_faces
-from .panels import ACO_PT_OrthosisAutomation
+
+from .operators import CLASSES as OPERATOR_CLASSES
+from .panels import CLASSES as PANEL_CLASSES
+from .properties import AlignAxisProperties, CLASSES as PROPERTY_CLASSES
+
+CLASSES = PROPERTY_CLASSES + OPERATOR_CLASSES + PANEL_CLASSES
 
 
-GEOMETRY_TYPES = {'MESH', 'CURVE', 'SURFACE'}
-
-
-def register():
-
-    bpy.utils.register_class(AlignAxisProperties)
-
-    bpy.utils.register_class(ACO_OT_alert_error_popup)
-    bpy.utils.register_class(ACO_OT_alert_info_popup)
-    bpy.utils.register_class(ACO_OT_align_limb_axis)
-    bpy.utils.register_class(ACO_OT_decimate_un_subdivide)
-    bpy.utils.register_class(ACO_OT_decimate_planar)
-    bpy.utils.register_class(ACO_OT_decimate_collapse)
-    bpy.utils.register_class(ACO_OT_number_of_vertices_and_faces)
-
-    bpy.utils.register_class(ACO_PT_OrthosisAutomation)
-
+def _register_scene_properties():
     bpy.types.Scene.vertices = bpy.props.IntProperty(default=0)
     bpy.types.Scene.faces = bpy.props.IntProperty(default=0)
     bpy.types.Scene.align_limb_props = bpy.props.PointerProperty(type=AlignAxisProperties)
 
 
-    #PENSAR EM UM MECANISMO PARA SEMPRE ATIVAR O OBJETO ANTES DE QUALQUER AÇÃO
+def _unregister_scene_properties():
+    for attribute_name in ("align_limb_props", "faces", "vertices"):
+        if hasattr(bpy.types.Scene, attribute_name):
+            delattr(bpy.types.Scene, attribute_name)
 
 
-    #add_handler_depsgraph(geometry_types=GEOMETRY_TYPES)
+def register():
+    for cls in CLASSES:
+        bpy.utils.register_class(cls)
 
-    #obj = bpy.context.active_object
-
-    #chance_for_mode("EDIT")
-
-    #Preencher lacunas
-    #fill_in_the_blanks(obj)
-
-
-    #chance_for_mode("OBJECT")
-    
+    _register_scene_properties()
 
 
 def unregister():
+    _unregister_scene_properties()
 
-    del bpy.types.Scene.vertices
-    del bpy.types.Scene.faces
-    del bpy.types.Scene.align_limb_props
-    
-    bpy.utils.unregister_class(ACO_PT_OrthosisAutomation)
-    bpy.utils.unregister_class(ACO_OT_number_of_vertices_and_faces)
-    bpy.utils.unregister_class(ACO_OT_decimate_collapse)
-    bpy.utils.unregister_class(ACO_OT_decimate_planar)
-    bpy.utils.unregister_class(ACO_OT_decimate_un_subdivide)
-    bpy.utils.unregister_class(ACO_OT_align_limb_axis)
-    bpy.utils.unregister_class(ACO_OT_alert_info_popup)
-    bpy.utils.unregister_class(ACO_OT_alert_error_popup)
-
-    bpy.utils.unregister_class(AlignAxisProperties)
+    for cls in reversed(CLASSES):
+        bpy.utils.unregister_class(cls)
 
 
 if __name__ == "__main__":

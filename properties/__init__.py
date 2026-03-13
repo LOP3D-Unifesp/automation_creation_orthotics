@@ -1,8 +1,10 @@
 from .align_limb import AlignAxisProperties
-from .reduce_polygons import ReducePolygonsProperties
 
+CLASSES = (
+    AlignAxisProperties,
+)
 
 __all__ = [
+    "CLASSES",
     "AlignAxisProperties",
-    "ReducePolygonsProperties"
 ]

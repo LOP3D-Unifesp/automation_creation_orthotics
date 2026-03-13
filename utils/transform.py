@@ -1,5 +1,7 @@
 import bpy
+
 from .object import centroid
+
 
 def align_to_axis(axis: str):
     try:
@@ -13,23 +15,19 @@ def align_to_axis(axis: str):
 
         center_world = centroid(verts=verts, matrix_world=obj.matrix_world)
 
-        # Ajusta a posição para alinhar ao eixo
         if axis == "X":
             obj.location.x -= center_world.x
         elif axis == "Y":
             obj.location.y -= center_world.y
         elif axis == "Z":
             obj.location.z -= center_world.z
-       
 
     except Exception as e:
         print(f"Ocorreu um erro ao alinhar o objeto ao eixo {axis}: {e}")
 
 
-
 def reset_rotation_axis(axis: str):
     obj = bpy.context.active_object
-    #obj.rotation_mode = 'XYZ'
 
     if axis == "X":
         obj.location.x = 0
@@ -39,3 +37,5 @@ def reset_rotation_axis(axis: str):
         obj.location.z = 0
 
 
+align_active_object_to_axis = align_to_axis
+reset_active_object_axis_rotation = reset_rotation_axis
