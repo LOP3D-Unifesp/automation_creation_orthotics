@@ -29,14 +29,13 @@ class ACO_OT_align_limb_axis(bpy.types.Operator):
             # Volta para Object Mode
             change_mode("OBJECT")
 
-
-            # Zera rotação no eixo
-            reset_rotation_axis(axis)
-
             print("O objeto deve estar alinhado ao eixo escolhido!")
 
             # Ajusta origem
             bpy.ops.object.origin_set(type="ORIGIN_CENTER_OF_MASS", center="MEDIAN")
+
+            # O zero final precisa acontecer depois de recentrar a origem.
+            reset_rotation_axis(axis)
 
             bpy.ops.aco.alert_info_popup('INVOKE_DEFAULT', message_info=f"Alinhado com sucesso ao eixo {axis}")
         
@@ -46,11 +45,3 @@ class ACO_OT_align_limb_axis(bpy.types.Operator):
 
 
         return {'FINISHED'}
-
-
-
-
-
-        
-        
-
