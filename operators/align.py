@@ -3,7 +3,7 @@ from ..utils import activate_object, align_to_axis, change_mode, reset_rotation_
 
 
 class ACO_OT_align_limb_axis(bpy.types.Operator):
-    bl_idname = "oca.align_limb_axis"
+    bl_idname = "aco.align_limb_axis"
     bl_label = "Alinhar membro no eixo"
 
     @object_has_to_be_activated

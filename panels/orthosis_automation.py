@@ -24,7 +24,7 @@ class ACO_PT_OrthosisAutomation(bpy.types.Panel):
 
 
         layout.label(text=f"Números de Vértices: {context.scene.vertices} e Faces: {context.scene.faces}")
-        layout.operator("my.vertex_count", text="Atualizar Contagem")
+        layout.operator("aco.number_of_vertices_and_face", text="Atualizar Contagem")
 
 
         layout.separator(factor=2.0)
