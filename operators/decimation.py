@@ -1,17 +1,18 @@
 import bpy
 
-from ..utils import decimate_by_type, object_has_to_be_activated
+from ..utils import decimate_by_type, object_has_to_be_activated, validate_mesh
 
 
 def _update_scene_counts(context):
     obj = context.active_object
+    diag = context.scene.aco_diagnostics
     if not obj or obj.type != "MESH":
-        context.scene.vertices = 0
-        context.scene.faces = 0
+        diag.vertices = 0
+        diag.faces = 0
         return
 
-    context.scene.vertices = len(obj.data.vertices)
-    context.scene.faces = len(obj.data.polygons)
+    diag.vertices = len(obj.data.vertices)
+    diag.faces = len(obj.data.polygons)
 
 
 def _count_faces(obj):
@@ -100,14 +101,14 @@ class ACO_OT_decimate_collapse(bpy.types.Operator):
                 # Fast mode for large scans: direct mapping from target reduction to keep ratio.
                 self.ratio = 1.0 - (target_percent / 100.0)
                 self.ratio = max(0.03, min(1.0, self.ratio))
-                context.scene.decimate_collapse_ratio = self.ratio
+                context.scene.aco_reduction.collapse_ratio = self.ratio
             else:
                 self.ratio = max(0.0, min(1.0, self.ratio))
 
             decimate_by_type("COLLAPSE", self.ratio)
             _update_scene_counts(context)
 
-            final_faces = context.scene.faces
+            final_faces = context.scene.aco_diagnostics.faces
             achieved_reduction = (1.0 - (final_faces / initial_faces)) * 100.0
 
             if target_percent >= 0:
@@ -167,19 +168,27 @@ class ACO_OT_number_of_vertices_and_faces(bpy.types.Operator):
     @object_has_to_be_activated
     def execute(self, context):
         obj = context.active_object
+        scene = context.scene
+        diag = scene.aco_diagnostics
 
         if not obj or obj.type != "MESH":
-            num_vertices = 0
-            face_count = 0
+            diag.vertices = 0
+            diag.faces = 0
             bpy.ops.aco.alert_error_popup(
                 "INVOKE_DEFAULT",
                 message="N\u00e3o foi poss\u00edvel realizar a contagem de v\u00e9rtices e faces do objeto 3D.",
             )
         else:
-            num_vertices = len(obj.data.vertices)
-            face_count = len(obj.data.polygons)
+            diag.vertices = len(obj.data.vertices)
+            diag.faces = len(obj.data.polygons)
 
-        context.scene.vertices = num_vertices
-        context.scene.faces = face_count
+            health = validate_mesh(obj)
+            diag.non_manifold_edges = health["non_manifold_edges"]
+            diag.loose_vertices = health["loose_vertices"]
+            diag.zero_area_faces = health["zero_area_faces"]
+            diag.health_valid = health["is_valid"]
+            diag.boundary_edges = health["boundary_edges"]
+            diag.duplicate_vertices = health["duplicate_vertices"]
+            diag.flipped_faces = health["flipped_faces"]
 
         return {"FINISHED"}

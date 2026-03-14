@@ -34,10 +34,9 @@ class ACO_PT_OrthosisInitialization(bpy.types.Panel):
         layout = self.layout
 
         buttons_column = layout.column(align=True)
-        buttons_column.enabled = False
-        buttons_column.operator("aco.number_of_vertices_and_face", text="Preparar Ambiente", icon="PREFERENCES")
-        buttons_column.operator("aco.number_of_vertices_and_face", text="Importar STL", icon="IMPORT")
-        buttons_column.operator("aco.number_of_vertices_and_face", text="Scan de Exemplo", icon="FILE_3D")
+        buttons_column.operator("aco.prepare_environment", text="Preparar Ambiente", icon="PREFERENCES")
+        buttons_column.operator("aco.import_stl", text="Importar STL", icon="IMPORT")
+        buttons_column.operator("aco.load_example_scan", text="Scan de Exemplo", icon="FILE_3D")
 
 
 class ACO_PT_OrthosisPrepareModel(bpy.types.Panel):
@@ -54,12 +53,30 @@ class ACO_PT_OrthosisPrepareModel(bpy.types.Panel):
     def _draw_model_diagnostics(self, layout, scene):
         box = layout.box()
         box.label(text="Diagn\u00f3stico do modelo", icon="MESH_DATA")
+        diag = scene.aco_diagnostics
 
         row = box.row(align=True)
-        row.label(text=f"V\u00e9rtices: {scene.vertices}")
-        row.label(text=f"Faces: {scene.faces}")
+        row.label(text=f"V\u00e9rtices: {diag.vertices}")
+        row.label(text=f"Faces: {diag.faces}")
 
         box.operator("aco.number_of_vertices_and_face", text="Atualizar an\u00e1lise", icon="FILE_REFRESH")
+
+        if diag.vertices > 0:
+            if diag.health_valid:
+                box.label(text="Malha sem problemas detectados", icon="CHECKMARK")
+            else:
+                if diag.non_manifold_edges > 0:
+                    box.label(text=f"{diag.non_manifold_edges} arestas n\u00e3o-manifold", icon="ERROR")
+                if diag.loose_vertices > 0:
+                    box.label(text=f"{diag.loose_vertices} v\u00e9rtices soltos", icon="ERROR")
+                if diag.zero_area_faces > 0:
+                    box.label(text=f"{diag.zero_area_faces} faces com \u00e1rea zero", icon="ERROR")
+            if diag.boundary_edges > 0:
+                box.label(text=f"{diag.boundary_edges} arestas de borda (buracos)", icon="ERROR")
+            if diag.duplicate_vertices > 0:
+                box.label(text=f"{diag.duplicate_vertices} v\u00e9rtices sobrepostos", icon="ERROR")
+            if diag.flipped_faces > 0:
+                box.label(text=f"{diag.flipped_faces} faces com normais invertidas", icon="INFO")
 
     def _draw_model_alignment(self, layout, scene):
         box = layout.box()
@@ -91,15 +108,15 @@ class ACO_PT_OrthosisPrepareModel(bpy.types.Panel):
         if not has_axis_selected:
             box.label(text="Selecione ao menos um eixo para alinhar.", icon="ERROR")
 
-    def _draw_reduction_operation(self, container, scene, context, title, icon, prop_name, prop_label, toggle_prop, hint):
+    def _draw_reduction_operation(self, container, reduction, context, title, icon, prop_name, prop_label, toggle_prop, hint):
         title_row = container.row(align=True)
         title_row.label(text=title, icon=icon)
-        title_row.prop(scene, toggle_prop, text="", toggle=True)
+        title_row.prop(reduction, toggle_prop, text="", toggle=True)
 
         controls_row = container.row(align=True)
         controls_row.scale_y = 1.05
-        controls_row.enabled = getattr(scene, toggle_prop)
-        controls_row.prop(scene, prop_name, text=prop_label, slider=True)
+        controls_row.enabled = getattr(reduction, toggle_prop)
+        controls_row.prop(reduction, prop_name, text=prop_label, slider=True)
 
         _draw_wrapped_label(container, hint, context.region.width, horizontal_padding=52)
 
@@ -119,6 +136,7 @@ class ACO_PT_OrthosisPrepareModel(bpy.types.Panel):
 
     def _draw_auto_cleanup(self, context, layout, scene):
         box = layout.box()
+        qr = scene.aco_quad_remesh
 
         header = box.row(align=True)
         header.label(text="Limpeza autom\u00e1tica", icon="MOD_REMESH")
@@ -126,40 +144,26 @@ class ACO_PT_OrthosisPrepareModel(bpy.types.Panel):
         toggle = header.row(align=True)
         toggle.alignment = "RIGHT"
         toggle.prop(
-            scene,
-            "show_quad_remesh_options",
+            qr,
+            "show_options",
             text="",
-            icon="TRIA_DOWN" if scene.show_quad_remesh_options else "TRIA_RIGHT",
+            icon="TRIA_DOWN" if qr.show_options else "TRIA_RIGHT",
             emboss=False,
         )
 
-        if not scene.show_quad_remesh_options:
-            box.label(text="Expandir para ajustar a limpeza autom\u00e1tica.", icon="INFO")
-            return
+        if qr.show_options:
+            controls = box.row(align=True)
+            controls.scale_y = 1.05
+            controls.prop(qr, "voxel_size", text="Resolu\u00e7\u00e3o da malha", slider=True)
 
-        controls = box.row(align=True)
-        controls.scale_y = 1.05
-        controls.prop(scene, "quad_remesh_voxel_size", text="Resolu\u00e7\u00e3o da malha", slider=True)
+            smooth_row = box.row(align=True)
+            smooth_row.prop(qr, "smooth_shade", text="Suavizar")
 
-        smooth_row = box.row(align=True)
-        smooth_row.prop(scene, "quad_remesh_smooth_shade", text="Suavizar")
+            apply_row = box.row(align=True)
+            apply_row.operator_context = "EXEC_DEFAULT"
+            apply_row.operator("aco.apply_quad_remesh", text="Aplicar Quad Remesh", icon="CHECKMARK")
 
-        apply_row = box.row(align=True)
-        apply_row.operator_context = "EXEC_DEFAULT"
-        apply_row.operator("aco.apply_quad_remesh", text="Aplicar Quad Remesh", icon="CHECKMARK")
-
-        _draw_wrapped_label(
-            box,
-            "Valores maiores simplificam mais; valores menores preservam mais detalhes.",
-            context.region.width,
-            horizontal_padding=52,
-        )
-        _draw_wrapped_label(
-            box,
-            "Boa op\u00e7\u00e3o para limpar a malha antes do design da \u00f3rtese.",
-            context.region.width,
-            horizontal_padding=52,
-        )
+        self._draw_cleanup_result(box, scene)
 
     def _cleanup_interpretation(self, change_percent):
         absolute_change = abs(change_percent)
@@ -172,26 +176,50 @@ class ACO_PT_OrthosisPrepareModel(bpy.types.Panel):
     def _draw_cleanup_result(self, layout, scene):
         box = layout.box()
         box.label(text="Resultado da limpeza", icon="INFO")
+        qr = scene.aco_quad_remesh
 
         row_before = box.row(align=True)
         row_before.label(text="Volume antes")
-        row_before.label(text=f"{scene.quad_remesh_volume_before:.4f} BU\u00b3")
+        row_before.label(text=f"{qr.volume_before:.4f} BU\u00b3")
 
         row_after = box.row(align=True)
         row_after.label(text="Volume depois")
-        row_after.label(text=f"{scene.quad_remesh_volume_after:.4f} BU\u00b3")
+        row_after.label(text=f"{qr.volume_after:.4f} BU\u00b3")
 
         row_change = box.row(align=True)
         row_change.label(text="Varia\u00e7\u00e3o")
-        if scene.quad_remesh_volume_valid:
-            row_change.label(text=f"{scene.quad_remesh_volume_change_percent:+.2f}%")
-            box.label(text=self._cleanup_interpretation(scene.quad_remesh_volume_change_percent), icon="CHECKMARK")
+        if qr.volume_valid:
+            row_change.label(text=f"{qr.volume_change_percent:+.2f}%")
+            box.label(text=self._cleanup_interpretation(qr.volume_change_percent), icon="CHECKMARK")
+        else:
+            row_change.label(text="N/A")
+            box.label(text="Volume indispon\u00edvel para esta malha.", icon="ERROR")
+
+    def _draw_reduction_result(self, layout, scene):
+        box = layout.box()
+        box.label(text="Resultado da redu\u00e7\u00e3o", icon="INFO")
+        reduction = scene.aco_reduction
+
+        row_before = box.row(align=True)
+        row_before.label(text="Volume antes")
+        row_before.label(text=f"{reduction.volume_before:.4f} BU\u00b3")
+
+        row_after = box.row(align=True)
+        row_after.label(text="Volume depois")
+        row_after.label(text=f"{reduction.volume_after:.4f} BU\u00b3")
+
+        row_change = box.row(align=True)
+        row_change.label(text="Varia\u00e7\u00e3o")
+        if reduction.volume_valid:
+            row_change.label(text=f"{reduction.volume_change_percent:+.2f}%")
+            box.label(text=self._cleanup_interpretation(reduction.volume_change_percent), icon="CHECKMARK")
         else:
             row_change.label(text="N/A")
             box.label(text="Volume indispon\u00edvel para esta malha.", icon="ERROR")
 
     def _draw_advanced_reduction(self, context, layout, scene):
         box = layout.box()
+        reduction = scene.aco_reduction
 
         header = box.row(align=True)
         header.label(text="Redu\u00e7\u00e3o da malha", icon="MOD_DECIM")
@@ -199,69 +227,68 @@ class ACO_PT_OrthosisPrepareModel(bpy.types.Panel):
         toggle = header.row(align=True)
         toggle.alignment = "RIGHT"
         toggle.prop(
-            scene,
-            "show_prepare_advanced",
+            reduction,
+            "show_advanced",
             text="",
-            icon="TRIA_DOWN" if scene.show_prepare_advanced else "TRIA_RIGHT",
+            icon="TRIA_DOWN" if reduction.show_advanced else "TRIA_RIGHT",
             emboss=False,
         )
 
-        if not scene.show_prepare_advanced:
-            box.label(text="Expandir para presets, Decima\u00e7\u00e3o, Un-Subdivide e Planar.", icon="INFO")
-            return
+        if reduction.show_advanced:
+            box.operator_context = "EXEC_DEFAULT"
 
-        box.operator_context = "EXEC_DEFAULT"
+            self._draw_reduction_presets(box)
+            box.separator(factor=0.5)
 
-        self._draw_reduction_presets(box)
-        box.separator(factor=0.5)
+            self._draw_reduction_operation(
+                container=box,
+                reduction=reduction,
+                context=context,
+                title="Decima\u00e7\u00e3o",
+                icon="MOD_TRIANGULATE",
+                prop_name="collapse_percent",
+                prop_label="Redu\u00e7\u00e3o (%)",
+                toggle_prop="use_collapse",
+                hint="90% reduz ~90% das faces (mant\u00e9m ~10%).",
+            )
 
-        self._draw_reduction_operation(
-            container=box,
-            scene=scene,
-            context=context,
-            title="Decima\u00e7\u00e3o",
-            icon="MOD_TRIANGULATE",
-            prop_name="decimate_collapse_reduction_percent",
-            prop_label="Redu\u00e7\u00e3o (%)",
-            toggle_prop="reduction_use_collapse",
-            hint="90% reduz ~90% das faces (mant\u00e9m ~10%).",
-        )
+            box.separator(factor=0.3)
 
-        box.separator(factor=0.3)
+            self._draw_reduction_operation(
+                container=box,
+                reduction=reduction,
+                context=context,
+                title="Un-Subdivide",
+                icon="MOD_SUBSURF",
+                prop_name="unsubdiv_iterations",
+                prop_label="Itera\u00e7\u00f5es",
+                toggle_prop="use_unsubdivide",
+                hint="Maior valor remove mais subdivis\u00f5es regulares.",
+            )
 
-        self._draw_reduction_operation(
-            container=box,
-            scene=scene,
-            context=context,
-            title="Un-Subdivide",
-            icon="MOD_SUBSURF",
-            prop_name="decimate_unsubdivide_iterations",
-            prop_label="Itera\u00e7\u00f5es",
-            toggle_prop="reduction_use_unsubdivide",
-            hint="Maior valor remove mais subdivis\u00f5es regulares.",
-        )
+            box.separator(factor=0.3)
 
-        box.separator(factor=0.3)
+            self._draw_reduction_operation(
+                container=box,
+                reduction=reduction,
+                context=context,
+                title="Planar",
+                icon=_safe_icon_name("SNAP_FACE", "MODIFIER"),
+                prop_name="planar_angle",
+                prop_label="\u00c2ngulo",
+                toggle_prop="use_planar",
+                hint="Maior \u00e2ngulo simplifica mais \u00e1reas quase planas.",
+            )
 
-        self._draw_reduction_operation(
-            container=box,
-            scene=scene,
-            context=context,
-            title="Planar",
-            icon=_safe_icon_name("SNAP_FACE", "MODIFIER"),
-            prop_name="decimate_planar_angle",
-            prop_label="\u00c2ngulo",
-            toggle_prop="reduction_use_planar",
-            hint="Maior \u00e2ngulo simplifica mais \u00e1reas quase planas.",
-        )
+            has_any_step = reduction.use_collapse or reduction.use_unsubdivide or reduction.use_planar
+            apply_row = box.row(align=True)
+            apply_row.enabled = has_any_step
+            apply_row.operator("aco.apply_mesh_reduction_pipeline", text="Aplicar redu\u00e7\u00e3o da malha", icon="CHECKMARK")
 
-        has_any_step = scene.reduction_use_collapse or scene.reduction_use_unsubdivide or scene.reduction_use_planar
-        apply_row = box.row(align=True)
-        apply_row.enabled = has_any_step
-        apply_row.operator("aco.apply_mesh_reduction_pipeline", text="Aplicar redu\u00e7\u00e3o da malha", icon="CHECKMARK")
+            if not has_any_step:
+                box.label(text="Marque ao menos uma etapa para aplicar.", icon="ERROR")
 
-        if not has_any_step:
-            box.label(text="Marque ao menos uma etapa para aplicar.", icon="ERROR")
+        self._draw_reduction_result(box, scene)
 
     def draw(self, context):
         layout = self.layout
@@ -270,7 +297,6 @@ class ACO_PT_OrthosisPrepareModel(bpy.types.Panel):
         self._draw_model_diagnostics(layout, scene)
         self._draw_model_alignment(layout, scene)
         self._draw_auto_cleanup(context, layout, scene)
-        self._draw_cleanup_result(layout, scene)
         self._draw_advanced_reduction(context, layout, scene)
 
 

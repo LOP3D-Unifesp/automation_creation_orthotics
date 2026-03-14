@@ -6,6 +6,11 @@ from .decimation import (
     ACO_OT_decimate_un_subdivide,
     ACO_OT_number_of_vertices_and_faces,
 )
+from .environment import (
+    ACO_OT_import_stl,
+    ACO_OT_load_example_scan,
+    ACO_OT_prepare_environment,
+)
 from .prepare_model import ACO_OT_prepare_model_auto
 from .reduction_tools import (
     ACO_OT_apply_mesh_reduction_pipeline,
@@ -16,6 +21,9 @@ from .reduction_tools import (
 CLASSES = (
     ACO_OT_alert_error_popup,
     ACO_OT_alert_info_popup,
+    ACO_OT_prepare_environment,
+    ACO_OT_import_stl,
+    ACO_OT_load_example_scan,
     ACO_OT_align_limb_axis,
     ACO_OT_prepare_model_auto,
     ACO_OT_apply_reduction_preset,
@@ -29,6 +37,9 @@ CLASSES = (
 
 __all__ = [
     "CLASSES",
+    "ACO_OT_prepare_environment",
+    "ACO_OT_import_stl",
+    "ACO_OT_load_example_scan",
     "ACO_OT_align_limb_axis",
     "ACO_OT_alert_error_popup",
     "ACO_OT_alert_info_popup",
