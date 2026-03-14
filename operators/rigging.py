@@ -4,9 +4,11 @@ from ..utils.mesh import positions_of_the_bones
 from ..utils.object import create_bones_with_position
 from ..utils.selection import change_mode, create_parent_deform
 
+
 class ACO_OT_creation_bones(bpy.types.Operator):
     bl_idname = "aco.creation_bones"
-    bl_label = "CriaÃ§Ã£o de Bones"
+    bl_label = "Criacao de Bones"
+    bl_options = {"REGISTER", "UNDO"}
 
     @object_has_to_be_activated
     def execute(self, context):
@@ -29,10 +31,6 @@ class ACO_OT_creation_bones(bpy.types.Operator):
             change_mode('POSE')
 
         except Exception as e:
-            bpy.ops.aco.alert_error_popup('INVOKE_DEFAULT', message=e)
+            bpy.ops.aco.alert_error_popup('INVOKE_DEFAULT', message=str(e))
 
         return {'FINISHED'}
-
-
-
-
