@@ -12,6 +12,7 @@ from .environment import (
     ACO_OT_prepare_environment,
 )
 from .prepare_model import ACO_OT_prepare_model_auto
+from .repair import ACO_OT_repair_mesh
 from .reduction_tools import (
     ACO_OT_apply_mesh_reduction_pipeline,
     ACO_OT_apply_quad_remesh,
@@ -33,6 +34,7 @@ CLASSES = (
     ACO_OT_decimate_planar,
     ACO_OT_decimate_collapse,
     ACO_OT_number_of_vertices_and_faces,
+    ACO_OT_repair_mesh,
 )
 
 __all__ = [
@@ -51,4 +53,5 @@ __all__ = [
     "ACO_OT_decimate_planar",
     "ACO_OT_decimate_un_subdivide",
     "ACO_OT_number_of_vertices_and_faces",
+    "ACO_OT_repair_mesh",
 ]

@@ -51,3 +51,13 @@ class DiagnosticsProperties(bpy.types.PropertyGroup):
         description="Número de faces cuja normal aponta para o interior da malha",
         default=0,
     )
+    self_intersecting_faces: bpy.props.IntProperty(
+        name="Faces Auto-Intersectantes",
+        description="Número de faces que se intersectam com outras partes da malha",
+        default=0,
+    )
+    health_analyzed: bpy.props.BoolProperty(
+        name="An\u00e1lise Realizada",
+        description="True se a an\u00e1lise de sa\u00fade foi executada ao menos uma vez",
+        default=False,
+    )

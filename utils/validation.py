@@ -1,4 +1,5 @@
 import bmesh
+from mathutils.bvhtree import BVHTree
 from mathutils.kdtree import KDTree
 
 
@@ -11,7 +12,8 @@ def validate_mesh(obj):
         zero_area_faces (int): faces com área < 1e-8.
         boundary_edges (int): arestas de borda (buracos) — somente 1 face ligada.
         duplicate_vertices (int): vértices sobrepostos (threshold 1e-4).
-        flipped_faces (int): faces com normal apontando para o interior.
+        flipped_faces (int): faces com normal divergente da recalculada por topologia.
+        self_intersecting_faces (int): faces que se intersectam com outras partes da malha.
         is_valid (bool): True se non_manifold, loose e zero_area forem zero.
     """
     result = {
@@ -21,6 +23,7 @@ def validate_mesh(obj):
         "boundary_edges": 0,
         "duplicate_vertices": 0,
         "flipped_faces": 0,
+        "self_intersecting_faces": 0,
         "is_valid": True,
     }
 
@@ -62,7 +65,6 @@ def validate_mesh(obj):
                 if v.index in visited:
                     continue
                 neighbors = kd.find_range(v.co, 1e-4)
-                # neighbors inclui o próprio vértice; conta extras
                 extras = [idx for (_, idx, _) in neighbors if idx != v.index and idx not in visited]
                 if extras:
                     duplicates += len(extras)
@@ -70,16 +72,38 @@ def validate_mesh(obj):
                 visited.add(v.index)
             result["duplicate_vertices"] = duplicates
 
-        # Faces com normais invertidas: normal aponta para o interior
+        # Faces com normais invertidas via recalc topológico
         if len(bm.faces) > 0:
-            centroid = sum((f.calc_center_median() for f in bm.faces), bm.faces[0].calc_center_median().copy())
-            centroid /= len(bm.faces)
-            flipped = 0
-            for f in bm.faces:
-                face_center = f.calc_center_median()
-                if (face_center - centroid).dot(f.normal) < 0:
-                    flipped += 1
-            result["flipped_faces"] = flipped
+            bm_copy = bm.copy()
+            try:
+                bmesh.ops.recalc_face_normals(bm_copy, faces=bm_copy.faces)
+                bm_copy.normal_update()
+                result["flipped_faces"] = sum(
+                    1 for f, fc in zip(bm.faces, bm_copy.faces)
+                    if f.normal.dot(fc.normal) < 0
+                )
+            finally:
+                bm_copy.free()
+
+        # Auto-interseções via BVHTree
+        if len(bm.faces) > 0:
+            bvh = BVHTree.FromBMesh(bm, epsilon=1e-6)
+            overlaps = bvh.overlap(bvh)
+
+            adjacent = [set() for _ in bm.faces]
+            for e in bm.edges:
+                fl = list(e.link_faces)
+                for i in range(len(fl)):
+                    for j in range(i + 1, len(fl)):
+                        adjacent[fl[i].index].add(fl[j].index)
+                        adjacent[fl[j].index].add(fl[i].index)
+
+            self_int = set()
+            for (i, j) in overlaps:
+                if i != j and j not in adjacent[i]:
+                    self_int.add(i)
+                    self_int.add(j)
+            result["self_intersecting_faces"] = len(self_int)
 
     except Exception:
         pass

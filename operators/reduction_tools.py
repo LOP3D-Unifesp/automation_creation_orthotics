@@ -173,6 +173,8 @@ class ACO_OT_apply_mesh_reduction_pipeline(bpy.types.Operator):
             diag.boundary_edges = health["boundary_edges"]
             diag.duplicate_vertices = health["duplicate_vertices"]
             diag.flipped_faces = health["flipped_faces"]
+            diag.self_intersecting_faces = health["self_intersecting_faces"]
+            diag.health_analyzed = True
 
             after_valid, volume_after = _mesh_volume_bu3(obj.data)
             volume_valid = before_valid and after_valid and volume_before > 0
@@ -242,6 +244,8 @@ class ACO_OT_apply_quad_remesh(bpy.types.Operator):
             diag.boundary_edges = health["boundary_edges"]
             diag.duplicate_vertices = health["duplicate_vertices"]
             diag.flipped_faces = health["flipped_faces"]
+            diag.self_intersecting_faces = health["self_intersecting_faces"]
+            diag.health_analyzed = True
 
             volume_after_valid, volume_after = _mesh_volume_bu3(obj.data)
             volume_valid = volume_before_valid and volume_after_valid and volume_before > 0

@@ -17,6 +17,7 @@ from .properties import (
     DiagnosticsProperties,
     MeshReductionProperties,
     QuadRemeshProperties,
+    RepairProperties,
     CLASSES as PROPERTY_CLASSES,
 )
 
@@ -27,12 +28,14 @@ def _register_scene_properties():
     bpy.types.Scene.aco_diagnostics = bpy.props.PointerProperty(type=DiagnosticsProperties)
     bpy.types.Scene.aco_reduction = bpy.props.PointerProperty(type=MeshReductionProperties)
     bpy.types.Scene.aco_quad_remesh = bpy.props.PointerProperty(type=QuadRemeshProperties)
+    bpy.types.Scene.aco_repair = bpy.props.PointerProperty(type=RepairProperties)
     bpy.types.Scene.align_limb_props = bpy.props.PointerProperty(type=AlignAxisProperties)
 
 
 def _unregister_scene_properties():
     for attribute_name in (
         "align_limb_props",
+        "aco_repair",
         "aco_quad_remesh",
         "aco_reduction",
         "aco_diagnostics",
@@ -43,7 +46,14 @@ def _unregister_scene_properties():
 
 def register():
     for cls in CLASSES:
-        bpy.utils.register_class(cls)
+        try:
+            bpy.utils.register_class(cls)
+        except ValueError:
+            try:
+                bpy.utils.unregister_class(cls)
+            except RuntimeError:
+                pass
+            bpy.utils.register_class(cls)
 
     _register_scene_properties()
 

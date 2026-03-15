@@ -190,5 +190,7 @@ class ACO_OT_number_of_vertices_and_faces(bpy.types.Operator):
             diag.boundary_edges = health["boundary_edges"]
             diag.duplicate_vertices = health["duplicate_vertices"]
             diag.flipped_faces = health["flipped_faces"]
+            diag.self_intersecting_faces = health["self_intersecting_faces"]
+            diag.health_analyzed = True
 
         return {"FINISHED"}
