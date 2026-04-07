@@ -1,6 +1,6 @@
 import bpy
 from bpy.types import Operator
-from ..utils import points_for, get_defs, centroid_of_the_intersection_points, is_ready_to_generate
+from ..utils import points_for, get_defs, is_ready_to_generate
 
 
 class ACO_OT_generate_bones(Operator):
