@@ -1,106 +1,64 @@
 import bpy
-from ..utils import object_size_by_axis
-from .object import centroid
-
-
-#def activated_an_object(obj: bpy_prop_collection[Object]):
-
-
-
-def get_coordinates_by_range(obj, coordinate: float, axis: str, interval: float = 0.1):
-    
-
-    verts = obj.data.vertices
-    if not verts:
-        return
-
-    axis_index = {'X': 0, 'Y': 1, 'Z': 2}.get(axis)
-
-    coordinates = []
-
-    co_min = coordinate - interval
-    co_max = coordinate + interval
-
-    for v in verts:
-        value = v.co[axis_index]
-        if co_min <= value <= co_max:
-            coordinates.append(v)
-        
-    return coordinates
-
-
-
-def positions_of_the_bones(axis: str, num_bones: int):
-    obj = bpy.context.active_object
-
-    size_object = object_size_by_axis(axis)
-
-    level = size_object.size / num_bones
-    initial_coordernate = size_object.co_min
-    positions = []
-
-    positions.append(initial_coordernate)
-
-    for index in range(1, num_bones):
-        coordinates = get_coordinates_by_range(obj=obj, coordinate=initial_coordernate, axis=axis)
-
-        center_world = centroid(verts=coordinates, matrix_world=obj.matrix_world)
-        
-        positions.append(center_world)
-        initial_coordernate += level
-    
-    positions.append(size_object.co_max)
-
-    return positions
+from .object import centroid, object_size_by_axis
+from ..properties import FINGER_DEFS
 
 
 
 
-def create_new_armature():
-    bpy.ops.object.armature_add(enter_editmode=True)
+#Retorna a lista de grupos de pontos de referência (landmarks)
+def get_defs():
+    defs = list(FINGER_DEFS)
+    return defs
 
-    armature = bpy.context.object
+#retorna todos os pontos do rig salvos na lista que pertencem a um grupo específico
+def points_for(rig, key):
+    points = []
 
-    return armature
+    for p in rig.joint_points:
+        if p.group == key:
+            points.append(p)
 
-
-    
-
-def create_first_bone(edit_bones, head_pos, tail_pos):
-    from mathutils import Vector
-
-    bone = edit_bones[0]
-    bone.name = "Bone 1"
-    bone.head = Vector(head_pos) 
-    bone.tail = Vector(tail_pos)
-
-    return bone
+    return points
 
 
 
-def create_outhers_bones(edit_bones, tail_pos, previous_bone, index=1):
+def expected(key):
 
-    from mathutils import Vector
-
-    bone = edit_bones.new(f"Bone {index}")
-    bone.head = previous_bone.tail
-    bone.tail = Vector(tail_pos)
-    bone.parent = previous_bone
-    bone.use_connect = True
-
-
-    return bone
-    
+    # valor ignorado (underscore é usado para indicar que não será usado)
+    for k, _, names in [*FINGER_DEFS]:
+        if k == key:
+            # retorna quantos nomes estão definidos para aquele grupo
+            return len(names)
+    return 0
 
 
+#Mede o quanto já foi realizado e atualiza rig.progress
+
+def update_progress(rig):
+    defs = get_defs()
+
+    total = 0
+    for item in defs:
+        names = item[2]
+        total = total + len(names)
+
+    marked = 0
+    for item in defs:
+        key = item[0]
+        points = points_for(rig, key)
+        marked = marked + len(points)
+
+    if total > 0:
+        rig.progress = marked / total
+    else:
+        rig.progress = 0.0
 
 
 
 
-
-
-
-
-
-
-
+def next_incomplete(rig):
+    """Retorna a chave do próximo dedo que ainda tem pontos faltando."""
+    for key, _, names in get_defs():
+        if len(points_for(rig, key)) < len(names):
+            return key
+    return ""

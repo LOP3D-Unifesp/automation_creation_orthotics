@@ -1,5 +1,5 @@
 import bpy
-
+import textwrap
 
 def remove_depsgraph():
     try:
@@ -9,16 +9,16 @@ def remove_depsgraph():
 
 
 def detect_import(depsgraph):
-    print("Mudança detectada no depsgraph.")
+    print("Mudan\u00e7a detectada no depsgraph.")
 
     limbs = bpy.data.objects
     
-    #Verifica se existe apenas um objeto e irá ativa-lo
+    #Verifica se existe apenas um objeto e ir\u00e1 ativa-lo
     if len(limbs) == 1:
         activated_an_object(limbs[0])
         
     else:
-        #Caso tenha mais que um objeto, o usuário deve selecionar o que deseja fazer alterações para EDIT MODE
+        #Caso tenha mais que um objeto, o usu\u00e1rio deve selecionar o que deseja fazer altera\u00e7\u00f5es para EDIT MODE
         pass
 
 
@@ -33,7 +33,7 @@ def is_scene_empty(geometry_types: dict):
 
 
 def add_handler_depsgraph(geometry_types: dict):        
-    # Evita adicionar o mesmo handler várias vezes
+    # Evita adicionar o mesmo handler v\u00e1rias vezes
     if detect_import not in bpy.app.handlers.depsgraph_update_post and is_scene_empty(geometry_types):
         bpy.app.handlers.depsgraph_update_post.append(detect_import)
 
@@ -42,7 +42,7 @@ def activated_an_object():
 
     obj = bpy.context.view_layer.objects.active
 
-    # Já existe objeto ativo
+    # J\u00e1 existe objeto ativo
     if obj is not None:
         return
 
@@ -55,15 +55,15 @@ def activated_an_object():
     # Mais de um objeto
     if len(objs) > 1:
         raise Exception(
-            "Há mais de um objeto na cena. "
+            "H\u00e1 mais de um objeto na cena. "
             "Ative apenas um objeto para continuar.\n"
-            "Vá para o Object Mode e clique no objeto desejado."
+            "V\u00e1 para o Object Mode e clique no objeto desejado."
         )
 
 
     single_obj = objs[0]
 
-    # Limpa seleção
+    # Limpa sele\u00e7\u00e3o
     bpy.ops.object.select_all(action='DESELECT')
 
     # Seleciona e ativa
@@ -80,3 +80,21 @@ def chance_for_mode(mode: str):
 
 
 
+
+def _safe_icon_name(primary, fallback="NONE"):
+    icon_enum = bpy.types.UILayout.bl_rna.functions["label"].parameters["icon"].enum_items.keys()
+    return primary if primary in icon_enum else fallback
+
+
+
+def _wrapped_lines(text, region_width, horizontal_padding=36):
+    approx_char_px = 7
+    usable_width = max(120, region_width - horizontal_padding)
+    max_chars = max(16, usable_width // approx_char_px)
+    return textwrap.wrap(text, width=max_chars, break_long_words=False, break_on_hyphens=False)
+
+
+
+def _draw_wrapped_label(layout, text, region_width, horizontal_padding=36):
+    for line in _wrapped_lines(text, region_width, horizontal_padding=horizontal_padding):
+        layout.label(text=line)
