@@ -1,5 +1,5 @@
 from .decorator import object_has_to_be_activated
-from .object import decimate_by_type, centroid_of_the_intersection_points
+from .object import decimate_by_type
 from .selection import activate_object, change_mode, is_ready_to_generate
 from .transform import align_to_axis, reset_rotation_axis
 from .validation import validate_mesh
@@ -23,7 +23,6 @@ __all__ = [
     "points_for",
     "expected",
     "get_defs",
-    "centroid_of_the_intersection_points",
     "is_ready_to_generate",
 ]
 
