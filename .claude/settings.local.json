@@ -1,0 +1,10 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(find 'C:\\\\Program Files\\\\Blender Foundation\\\\Blender 3.6\\\\3.6\\\\scripts' -type f -name *.py)",
+      "Bash(find 'C:\\\\Program Files\\\\Blender Foundation\\\\Blender 3.6\\\\3.6\\\\scripts\\\\modules' -type f -name *.py)",
+      "Bash(find 'C:/Program Files/Blender Foundation/Blender 3.6' -path */scripts/addons* -type d)",
+      "Bash(xargs grep:*)"
+    ]
+  }
+}

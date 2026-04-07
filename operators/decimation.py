@@ -1,18 +1,37 @@
 import bpy
-from ..utils import decimate_by_type, object_has_to_be_activated
+
+from ..utils import decimate_by_type, object_has_to_be_activated, validate_mesh
+
+
+def _update_scene_counts(context):
+    obj = context.active_object
+    diag = context.scene.aco_diagnostics
+    if not obj or obj.type != "MESH":
+        diag.vertices = 0
+        diag.faces = 0
+        return
+
+    diag.vertices = len(obj.data.vertices)
+    diag.faces = len(obj.data.polygons)
+
+
+def _count_faces(obj):
+    if not obj or obj.type != "MESH":
+        return 0
+    return len(obj.data.polygons)
 
 
 class ACO_OT_decimate_planar(bpy.types.Operator):
     bl_idname = "aco.reduce_polygonos_by_planar"
-    bl_label = "Decimação Planar"
-    bl_options = {'REGISTER', 'UNDO'}
+    bl_label = "Decima\u00e7\u00e3o Planar"
+    bl_options = {"REGISTER", "UNDO"}
 
-    angle_limit: bpy.props.IntProperty( 
+    angle_limit: bpy.props.IntProperty(
         name="Angle Limit",
-        description="Junta faces que estão quase planas seguindo o angulo",
+        description="Junta faces quase planas com base no \u00e2ngulo",
         default=10,
         min=0,
-        max=180
+        max=180,
     )
 
     def invoke(self, context, event):
@@ -20,38 +39,41 @@ class ACO_OT_decimate_planar(bpy.types.Operator):
 
     def draw(self, context):
         layout = self.layout
-        
-        layout.label(text="Limite de ângulo entre faces planas: ")
+        layout.label(text="Limite de \u00e2ngulo entre faces planas:")
         layout.prop(self, "angle_limit")
 
     @object_has_to_be_activated
     def execute(self, context):
-
         try:
-        
-            decimate_by_type('DISSOLVE', self.angle_limit)
-
-            print(f" Decimação Planar: {self.angle_limit}")
-        
+            decimate_by_type("DISSOLVE", self.angle_limit)
+            _update_scene_counts(context)
+            self.report({"INFO"}, f"Planar aplicado (\u00e2ngulo: {self.angle_limit} graus).")
         except Exception as e:
+            bpy.ops.aco.alert_error_popup("INVOKE_DEFAULT", message=str(e))
 
-            bpy.ops.aco.alert_error_popup('INVOKE_DEFAULT', message=e)
-
-        return {'FINISHED'}
-
-
-
+        return {"FINISHED"}
 
 
 class ACO_OT_decimate_collapse(bpy.types.Operator):
     bl_idname = "aco.reduce_polygonos_by_collapse"
-    bl_label = "Decimação Collapse"
-    bl_options = {'REGISTER', 'UNDO'}
+    bl_label = "Decima\u00e7\u00e3o Collapse"
+    bl_options = {"REGISTER", "UNDO"}
 
     ratio: bpy.props.FloatProperty(
         name="Ratio",
-        description="Parâmetro para controlar a porcentagem de redução",
-        default=0.5
+        description="Propor\u00e7\u00e3o de faces a manter",
+        default=0.5,
+        min=0.0,
+        max=1.0,
+    )
+
+    target_reduction_percent: bpy.props.IntProperty(
+        name="Target Reduction Percent",
+        description="Meta de redu\u00e7\u00e3o percentual por faces (0 a 99)",
+        default=-1,
+        min=-1,
+        max=99,
+        options={"SKIP_SAVE"},
     )
 
     def invoke(self, context, event):
@@ -59,36 +81,64 @@ class ACO_OT_decimate_collapse(bpy.types.Operator):
 
     def draw(self, context):
         layout = self.layout
-        
-        layout.label(text="Proporção de faces a manter: ")
+        layout.label(text="Propor\u00e7\u00e3o de faces a manter:")
         layout.prop(self, "ratio")
 
     @object_has_to_be_activated
     def execute(self, context):
-        
         try:
+            obj = context.active_object
+            initial_faces = _count_faces(obj)
 
-            decimate_by_type('COLLAPSE', self.ratio)
+            if initial_faces <= 0:
+                bpy.ops.aco.alert_error_popup("INVOKE_DEFAULT", message="Objeto sem faces para decimar.")
+                return {"CANCELLED"}
 
-            print(f" Decimação Collapse: {self.ratio}")
-        
+            target_percent = self.target_reduction_percent
+
+            if target_percent >= 0:
+                target_percent = max(0, min(99, target_percent))
+                # Fast mode for large scans: direct mapping from target reduction to keep ratio.
+                self.ratio = 1.0 - (target_percent / 100.0)
+                self.ratio = max(0.03, min(1.0, self.ratio))
+                context.scene.aco_reduction.collapse_ratio = self.ratio
+            else:
+                self.ratio = max(0.0, min(1.0, self.ratio))
+
+            decimate_by_type("COLLAPSE", self.ratio)
+            _update_scene_counts(context)
+
+            final_faces = context.scene.aco_diagnostics.faces
+            achieved_reduction = (1.0 - (final_faces / initial_faces)) * 100.0
+
+            if target_percent >= 0:
+                self.report(
+                    {"INFO"},
+                    (
+                        f"Decima\u00e7\u00e3o aplicada: alvo {target_percent}% | obtido {achieved_reduction:.1f}% "
+                        f"({initial_faces} -> {final_faces} faces)."
+                    ),
+                )
+            else:
+                self.report({"INFO"}, f"Collapse aplicado (ratio: {self.ratio:.3f}).")
+
         except Exception as e:
-            bpy.ops.aco.alert_error_popup('INVOKE_DEFAULT', message=e)
-        
-        return {'FINISHED'}
-    
+            bpy.ops.aco.alert_error_popup("INVOKE_DEFAULT", message=str(e))
 
+        return {"FINISHED"}
 
 
 class ACO_OT_decimate_un_subdivide(bpy.types.Operator):
     bl_idname = "aco.reduce_polygonos_by_un_subdivide"
-    bl_label = "Decimação Un-Subdivide"
-    bl_options = {'REGISTER', 'UNDO'}
+    bl_label = "Decima\u00e7\u00e3o Un-Subdivide"
+    bl_options = {"REGISTER", "UNDO"}
 
     iterations: bpy.props.IntProperty(
         name="Iterations",
-        description="Parâmetro que remove a quantidade de etapas de subdivisão",
-        default=1
+        description="Quantidade de etapas de subdivis\u00e3o a remover",
+        default=1,
+        min=1,
+        max=100,
     )
 
     def invoke(self, context, event):
@@ -96,60 +146,51 @@ class ACO_OT_decimate_un_subdivide(bpy.types.Operator):
 
     def draw(self, context):
         layout = self.layout
-
-        layout.label(text="Quantas vezes reduzir: ")
+        layout.label(text="Quantas vezes reduzir:")
         layout.prop(self, "iterations")
 
     @object_has_to_be_activated
     def execute(self, context):
-        
         try:
-
-            decimate_by_type('UNSUBDIV', self.iterations)
-
-            print(f" Decimação Un-Subdivide: {self.iterations}")
-        
+            decimate_by_type("UNSUBDIV", self.iterations)
+            _update_scene_counts(context)
+            self.report({"INFO"}, f"Un-Subdivide aplicado (itera\u00e7\u00f5es: {self.iterations}).")
         except Exception as e:
-            bpy.ops.aco.alert_error_popup('INVOKE_DEFAULT', message=e)
+            bpy.ops.aco.alert_error_popup("INVOKE_DEFAULT", message=str(e))
 
-        return {'FINISHED'}
-
-
+        return {"FINISHED"}
 
 
 class ACO_OT_number_of_vertices_and_faces(bpy.types.Operator):
     bl_idname = "aco.number_of_vertices_and_face"
-    bl_label = "Números de Vértices e Faces do Objeto Ativo"
+    bl_label = "N\u00fameros de V\u00e9rtices e Faces do Objeto Ativo"
 
     @object_has_to_be_activated
     def execute(self, context):
-
         obj = context.active_object
+        scene = context.scene
+        diag = scene.aco_diagnostics
 
-        if not obj or obj.type != 'MESH' :
-            num_vertices = 0
-            face_count = 0
-
-            bpy.ops.aco.alert_error_popup('INVOKE_DEFAULT', message="Não foi possivel realizar a contagem das vértices e faces do objeto 3D.")
-        
+        if not obj or obj.type != "MESH":
+            diag.vertices = 0
+            diag.faces = 0
+            bpy.ops.aco.alert_error_popup(
+                "INVOKE_DEFAULT",
+                message="N\u00e3o foi poss\u00edvel realizar a contagem de v\u00e9rtices e faces do objeto 3D.",
+            )
         else:
+            diag.vertices = len(obj.data.vertices)
+            diag.faces = len(obj.data.polygons)
 
-            num_vertices = len(obj.data.vertices)
-            face_count = len(obj.data.polygons)
+            health = validate_mesh(obj)
+            diag.non_manifold_edges = health["non_manifold_edges"]
+            diag.loose_vertices = health["loose_vertices"]
+            diag.zero_area_faces = health["zero_area_faces"]
+            diag.health_valid = health["is_valid"]
+            diag.boundary_edges = health["boundary_edges"]
+            diag.duplicate_vertices = health["duplicate_vertices"]
+            diag.flipped_faces = health["flipped_faces"]
+            diag.self_intersecting_faces = health["self_intersecting_faces"]
+            diag.health_analyzed = True
 
-        
-        context.scene.vertices = num_vertices
-        context.scene.faces = face_count
-
-        return {'FINISHED'}
-        
-
-        
-
-        
-
-        
-
-
-
-
+        return {"FINISHED"}
