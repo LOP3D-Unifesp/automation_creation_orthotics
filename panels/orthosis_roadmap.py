@@ -16,6 +16,6 @@ class ACO_PT_OrthosisRoadmap(bpy.types.Panel):
     def draw(self, context):
         layout = self.layout
         _draw_wrapped_label(layout, "1. Reposicionamento anat\u00f4mico", context.region.width, horizontal_padding=36)
-        _draw_wrapped_label(layout, "2. Definir a extensao da funcionalidade", context.region.width, horizontal_padding=36)
+        _draw_wrapped_label(layout, "2. Calcular e mostrar a angulação de cada articulação", context.region.width, horizontal_padding=36)
 
         
