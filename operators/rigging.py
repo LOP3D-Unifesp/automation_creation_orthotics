@@ -44,6 +44,8 @@ class ACO_OT_generate_bones(Operator):
         
         #Adiciona o objeto "Hand_Rig" à coleção da cena, para ficar visível
         scene.collection.objects.link(arm_obj)
+
+        arm_obj.show_in_front = True # Faz o rig aparecer na frente da malha
         
         #As operações seguintes vão agir sobre ele
         context.view_layer.objects.active = arm_obj
