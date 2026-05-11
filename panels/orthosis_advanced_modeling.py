@@ -44,7 +44,15 @@ class ACO_PT_OrthosisAdvancedModeling(bpy.types.Panel):
         if rig.generated:
             box.label(text="Gerado. Limpe para recomeçar.", icon="CHECKMARK")
         elif not rig.active_finger:
-            box.label(text="Selecione um segmento abaixo.", icon="INFO")
+            if rig.group_to_remove == "None":
+                box.label(text="Selecione um segmento abaixo.", icon="INFO")
+            else:
+                alert_row = box.row()
+                alert_row.alert = True
+                alert_row.label(
+                    text="Para reseleção, selecione a malha primeiro.",
+                    icon="ERROR",
+                )
         else:
             
             # Pega qual dedo está ativo
@@ -116,19 +124,46 @@ class ACO_PT_OrthosisAdvancedModeling(bpy.types.Panel):
 
         # Ações
         action_row = box.row(align=True)
+        
 
         if len(rig.joint_points) > 0:
             action_row.operator("aco.undo_point", text="", icon="LOOP_BACK")
+            
+            box.operator("aco.clear_joint_points", text="Limpar tudo", icon="X")
 
-         
+        ##Adicionar operador para criar apenas um bone
         if is_ready_to_generate(rig):
+            
+                
             action_row.operator(
                 "aco.generate_hand_bones",
                 text="Gerar bones",
                 icon="OUTLINER_OB_ARMATURE",
             )
+            
+                 
+           
+            if rig.generated:
+                
+                col = layout.column(align=True)
+                col.label(text="Dedo selecionado", icon="HAND")
+                col.prop(rig, "group_to_remove", text="")
+                
+                action_row.separator(factor=0.5)
+                
+                col_remove = layout.row()
+                col_remove.alert = True
+                col_remove.operator("aco.redo_finger_bone", text="Remover Bone Selecionado", icon="X")
+                col_remove.alert = False
+                col_remove.operator("aco.cancel_selected_finger", text="Cancelar seleção", icon="LOOP_BACK")
+                
+                col_remove.separator(factor=0.5)
+                
+                               
+                #action_row.operator("wm.call_menu", text="Gerar único bone").name = "ACO_MT_list_of_fingers_hand"
 
-        box.operator("aco.clear_joint_points", text="Limpar tudo", icon="X")
+        
+        
         
         
         

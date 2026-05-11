@@ -22,12 +22,15 @@ def create_parent_deform(armature):
     bpy.ops.object.parent_set(type='ARMATURE_AUTO')
 
 
+
 def change_mode(mode: str):
     obj = bpy.context.active_object
     if not obj:
         return
 
     bpy.ops.object.mode_set(mode=mode)
+    
+    
 
 def is_ready_to_generate(rig) -> bool:
 
@@ -48,6 +51,9 @@ def is_ready_to_generate(rig) -> bool:
     )
 
     return algum_dedo_completo
+
+
+
 
 
 

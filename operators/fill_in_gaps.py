@@ -4,7 +4,6 @@ import bmesh
 
 
 
-
 def detect_gaps_activated_object():
 
     try:
