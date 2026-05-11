@@ -18,11 +18,12 @@ from .reduction_tools import (
     ACO_OT_apply_quad_remesh,
     ACO_OT_apply_reduction_preset,
 )
-
+from .redo_finger_bone import ACO_OT_redo_finger_bone
 from .clear_points_bones import ACO_OT_clear_points_bones
 from .mark_point import ACO_OT_mark_point_modal, ACO_OT_select_finger  
 from .undo_point import ACO_OT_undo_point
 from .rigging import  ACO_OT_generate_bones
+from .cancel_selected_finger import ACO_OT_cancel_selected_finger
 
 
 CLASSES = (
@@ -46,6 +47,8 @@ CLASSES = (
     ACO_OT_select_finger ,
     ACO_OT_undo_point, 
     ACO_OT_generate_bones,
+    ACO_OT_redo_finger_bone, 
+    ACO_OT_cancel_selected_finger,
 
 )
 
@@ -71,4 +74,7 @@ __all__ = [
     "ACO_OT_select_finger",
     "ACO_OT_undo_point",
     "ACO_OT_generate_bones",
+    "ACO_OT_redo_finger_bone",
+    "ACO_OT_cancel_selected_finger",
+    
 ]

@@ -1,5 +1,4 @@
 import bpy
-from .object import centroid, object_size_by_axis
 from ..properties import FINGER_DEFS
 
 
@@ -9,6 +8,17 @@ from ..properties import FINGER_DEFS
 def get_defs():
     defs = list(FINGER_DEFS)
     return defs
+
+
+
+def get_specifics_defs(keys):
+    defs = list(FINGER_DEFS)
+
+    defs_specific = [d for d in defs if d[0] in keys]
+    
+    return defs_specific
+
+        
 
 #retorna todos os pontos do rig salvos na lista que pertencem a um grupo específico
 def points_for(rig, key):

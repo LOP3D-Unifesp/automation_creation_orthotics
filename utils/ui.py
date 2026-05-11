@@ -71,15 +71,15 @@ def activated_an_object():
     bpy.context.view_layer.objects.active = single_obj
 
 
-  
 
 
-def chance_for_mode(mode: str):
+def change_mode(mode: str):
     # Troca o modo ativo do objeto selecionado
     bpy.ops.object.mode_set(mode=mode)
-
-
-
+    
+    
+    
+    
 
 def _safe_icon_name(primary, fallback="NONE"):
     icon_enum = bpy.types.UILayout.bl_rna.functions["label"].parameters["icon"].enum_items.keys()
