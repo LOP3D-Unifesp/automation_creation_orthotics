@@ -44,7 +44,7 @@ class ACO_PT_OrthosisAdvancedModeling(bpy.types.Panel):
         if rig.generated:
             box.label(text="Gerado. Limpe para recomeçar.", icon="CHECKMARK")
         elif not rig.active_finger:
-            if rig.group_to_remove == "None":
+            if rig.group_to_remove == "NONE":
                 box.label(text="Selecione um segmento abaixo.", icon="INFO")
             else:
                 alert_row = box.row()
