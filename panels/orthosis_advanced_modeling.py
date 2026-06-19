@@ -42,7 +42,9 @@ class ACO_PT_OrthosisAdvancedModeling(bpy.types.Panel):
 
         # Instrução contextual
         if rig.generated:
+            
             box.label(text="Gerado. Limpe para recomeçar.", icon="CHECKMARK")
+            
         elif not rig.active_finger:
             if rig.group_to_remove == "NONE":
                 box.label(text="Selecione um segmento abaixo.", icon="INFO")
@@ -53,6 +55,8 @@ class ACO_PT_OrthosisAdvancedModeling(bpy.types.Panel):
                     text="Para reseleção, selecione a malha primeiro.",
                     icon="ERROR",
                 )
+                
+                
         else:
             
             # Pega qual dedo está ativo

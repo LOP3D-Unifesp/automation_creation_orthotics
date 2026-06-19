@@ -1,5 +1,5 @@
 import bpy
-from ..utils import activate_object, align_to_axis, change_mode, reset_rotation_axis, object_has_to_be_activated
+from ...utils import activate_object, align_to_axis, change_mode, reset_rotation_axis, object_has_to_be_activated
 
 
 def _frame_active_object_in_viewports(context):
@@ -45,6 +45,10 @@ class ACO_OT_align_limb_axis(bpy.types.Operator):
     @object_has_to_be_activated
     def execute(self, context):
         scene = context.scene
+
+        bpy.ops.aco.processing_time_start("EXEC_DEFAULT",
+            name_task="Mesh Alignment")
+        
         selected_axes = self._selected_axes(scene, force_all_axes=self.force_all_axes)
 
         if not selected_axes:
@@ -78,4 +82,5 @@ class ACO_OT_align_limb_axis(bpy.types.Operator):
         except Exception as e:
             bpy.ops.aco.alert_error_popup("INVOKE_DEFAULT", message=str(e))
 
+        bpy.ops.aco.processing_time_stop('EXEC_DEFAULT')
         return {"FINISHED"}

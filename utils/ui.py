@@ -1,5 +1,6 @@
 import bpy
 import textwrap
+from .validation import validate_mesh
 
 def remove_depsgraph():
     try:
@@ -98,3 +99,20 @@ def _wrapped_lines(text, region_width, horizontal_padding=36):
 def _draw_wrapped_label(layout, text, region_width, horizontal_padding=36):
     for line in _wrapped_lines(text, region_width, horizontal_padding=horizontal_padding):
         layout.label(text=line)
+
+
+def warn_mesh_health(operator, obj):
+    health = validate_mesh(obj)
+    if not health["is_valid"]:
+        issues = []
+        if health["non_manifold_edges"]:
+            issues.append(f"{health['non_manifold_edges']} arestas n\u00e3o-manifold")
+        if health["loose_vertices"]:
+            issues.append(f"{health['loose_vertices']} v\u00e9rtices soltos")
+        if health["zero_area_faces"]:
+            issues.append(f"{health['zero_area_faces']} faces com \u00e1rea zero")
+        operator.report(
+            {"WARNING"},
+            f"Malha com problemas: {', '.join(issues)}. A opera\u00e7\u00e3o continuar\u00e1, mas o resultado pode ser impreciso.",
+        )
+

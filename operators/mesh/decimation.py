@@ -1,6 +1,6 @@
 import bpy
 
-from ..utils import decimate_by_type, object_has_to_be_activated, validate_mesh
+from ...utils import decimate_by_type, object_has_to_be_activated, validate_mesh
 
 
 def _update_scene_counts(context):
