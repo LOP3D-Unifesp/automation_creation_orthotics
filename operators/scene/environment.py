@@ -2,10 +2,13 @@ import os
 
 import bpy
 
-from ..utils import validate_mesh
+from ...utils import validate_mesh
 
-_ASSETS_DIR = os.path.join(os.path.dirname(os.path.dirname(__file__)), "assets")
-_TEMPLATE_PATH = os.path.join(_ASSETS_DIR, "template.blend")
+BASE_DIR = os.path.abspath(
+    os.path.join(os.path.dirname(__file__), "..", "..")
+)
+_ASSETS_DIR = os.path.join(BASE_DIR, "assets")
+
 _EXAMPLE_SCANS = {
     "SCAN_1": "ScanMaoEspastica.stl",
     "SCAN_2": "ScanMaoEspastica_2.stl",
@@ -13,7 +16,7 @@ _EXAMPLE_SCANS = {
 
 
 def _run_initial_analysis(context):
-    """Roda análise completa no objeto ativo e atualiza aco_diagnostics."""
+    
     obj = context.active_object
     if not obj or obj.type != "MESH":
         return
@@ -39,14 +42,17 @@ class ACO_OT_prepare_environment(bpy.types.Operator):
     bl_options = {"REGISTER"}
 
     def invoke(self, context, event):
-        return context.window_manager.invoke_confirm(self, event)
+        return context.window_manager.invoke_popup(self)
 
-    def execute(self, context):
-        if not os.path.isfile(_TEMPLATE_PATH):
-            self.report({"ERROR"}, f"Template n\u00e3o encontrado: {_TEMPLATE_PATH}")
-            return {"CANCELLED"}
+    def draw(self, context):
+        layout = self.layout
+        
+        layout.label(text="Ferramentas de Ambiente")
+        
+        layout.operator("wm.call_panel", text="Ir para Câmera", icon='CAMERA_DATA').name = "VIEW3D_PT_view3d_properties"
+        layout.operator("wm.call_panel", text="Ajustar Eixos",  icon='CURSOR').name = "VIEW3D_PT_view3d_cursor"
 
-        bpy.ops.wm.open_mainfile(filepath=_TEMPLATE_PATH)
+    def execute(self, context):  
         return {"FINISHED"}
 
 

@@ -1,6 +1,6 @@
 import bpy
 from bpy.types import Operator
-from ..utils import get_defs, is_ready_to_generate, change_mode, collect_grouped_points, create_finger_bones, create_forearm_bone
+from ...utils import get_defs, is_ready_to_generate, change_mode, collect_grouped_points, create_finger_bones, create_forearm_bone
 
 
 class ACO_OT_generate_bones(Operator):
@@ -23,24 +23,24 @@ class ACO_OT_generate_bones(Operator):
         if rig.group_to_remove == "NONE":
             
             grouped = collect_grouped_points(rig=rig, items=defs, is_tuple=True)
-            
+
             # container de dados que vai armazenar os ossos
             arm_data = bpy.data.armatures.new("Hand_Armature")
-            
+
             #Armature um tipo especial de objeto, precisa estar associado a um objeto para aparecer 
             arm_obj  = bpy.data.objects.new("Hand_Rig", arm_data)
-            
+
             #Adiciona o objeto "Hand_Rig" à coleção da cena, para ficar visível
             scene.collection.objects.link(arm_obj)
 
             arm_obj.show_in_front = True # Faz o rig aparecer na frente da malha, facilitando a visualização e seleção dos ossos durante a edição.
-        
             
+
         else:
-            
+
             groups = ["wrist", rig.group_to_remove] if rig.group_to_remove != "forearm" else [rig.group_to_remove]
             grouped = collect_grouped_points(rig=rig, items=groups)
-            
+
             arm_obj = bpy.data.objects["Hand_Rig"]
             arm_data = arm_obj.data
             
@@ -49,22 +49,22 @@ class ACO_OT_generate_bones(Operator):
         context.view_layer.objects.active = arm_obj
         change_mode("EDIT")
 
-        eb        = arm_data.edit_bones
+        eb  = arm_data.edit_bones
         bone_map  = {}  
 
         # Pulso: ponto único, bone apontando para cima
         wrist_co = grouped.get("wrist", [None])[0]
-    
-            
-        for key, _, names in defs:
-            
-            pts = grouped.get(key, [])
-            
-            create_finger_bones(eb, bone_map, key, pts, names, wrist_co)
-            
         
+
+        for key, _, names in defs:
+
+            pts = grouped.get(key, [])
+
+            create_finger_bones(eb, bone_map, key, pts, names, wrist_co)
+
+
         create_forearm_bone(eb, bone_map, grouped)
-           
+        
 
         change_mode("OBJECT")
 
@@ -75,7 +75,13 @@ class ACO_OT_generate_bones(Operator):
             arm_obj.select_set(True)
             context.view_layer.objects.active = arm_obj
             bpy.ops.object.parent_set(type="ARMATURE_AUTO")
-
+        
         rig.generated = True
+
         self.report({"INFO"}, f"{len(bone_map)} bones gerados.")
+        
+        bpy.ops.aco.processing_time_stop('EXEC_DEFAULT')
+
+        bpy.ops.aco.delete_bone_score_markers('EXEC_DEFAULT')
+        
         return {"FINISHED"}

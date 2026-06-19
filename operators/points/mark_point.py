@@ -1,7 +1,7 @@
 import bpy
 from bpy.types import Operator
 from bpy_extras.view3d_utils import region_2d_to_origin_3d, region_2d_to_vector_3d
-from ..utils import update_progress, points_for, expected
+from ...utils import update_progress, points_for, expected
 
 
 class ACO_OT_select_finger(Operator):
@@ -51,14 +51,23 @@ class ACO_OT_mark_point_modal(Operator):
 
     def modal(self, context, event):
         rig = context.scene.aco_rig_hand
+        register_time = context.scene.process_timer
+        
+        if not register_time.running and not register_time.paused:
+            bpy.ops.aco.processing_time_start("EXEC_DEFAULT",
+                                            name_task="Rigging")
 
         # Sai do modal se não há mais dedo ativo ou todos completos
         if not rig.active_finger:
             self._finish(context)
             return {"FINISHED"}
+        
+        if event.type == "Z" and event.ctrl and event.value == "PRESS":
+            bpy.ops.aco.undo_point()
+            return {"RUNNING_MODAL"}
 
         # Cancela com ESC ou botão direito
-        if event.type in {"ESC", "RIGHTMOUSE"} and event.value == "PRESS":
+        if event.type in {"ESC", "RIGHTMOUSE"}:
             rig.active_finger = ""
             #cancela e sai do modal
             self._finish(context)
@@ -100,6 +109,8 @@ class ACO_OT_mark_point_modal(Operator):
 
             update_progress(rig)
 
+            bpy.ops.aco.create_bone_score_markers('EXEC_DEFAULT')
+
             # Verifica se o dedo ativo já foi totalmente marcado
             if len(points_for(rig, rig.active_finger)) >= expected(rig.active_finger):
                 self._finish(context)
@@ -110,6 +121,7 @@ class ACO_OT_mark_point_modal(Operator):
                 area.tag_redraw()
 
             return {"RUNNING_MODAL"}
+
 
         # Passa qualquer outro evento adiante (navegação do viewport, etc.)
         return {"PASS_THROUGH"}

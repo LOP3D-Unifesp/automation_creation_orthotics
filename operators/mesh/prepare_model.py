@@ -1,5 +1,5 @@
 import bpy
-from ..utils import object_has_to_be_activated
+from ...utils import object_has_to_be_activated
 
 
 class ACO_OT_prepare_model_auto(bpy.types.Operator):

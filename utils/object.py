@@ -26,6 +26,8 @@ def decimate_by_type(decimate_type: str, parameter):
     bpy.ops.object.modifier_apply(modifier=mod.name)
 
 
+
+
 def centroid(verts, matrix_world):
     import mathutils
 
@@ -147,3 +149,14 @@ def create_forearm_bone(eb, bone_map, grouped):
         return
     
     
+    
+
+
+def add_point_marker(point_world, radius=1.5):
+    bpy.ops.mesh.primitive_uv_sphere_add(radius=radius, location=point_world)
+    marker = bpy.context.active_object
+    marker.name = name
+    return marker
+
+def clear_markers():
+    pass

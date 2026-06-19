@@ -25,7 +25,11 @@ class ACO_PT_OrthosisPrepareModel(bpy.types.Panel):
         row.label(text=f"Faces: {diag.faces}")
 
         box.operator("aco.number_of_vertices_and_face", text="Atualizar an\u00e1lise", icon="FILE_REFRESH")
-
+        box.operator("aco.current_mesh_information",
+                            text="Informa\u00e7\u00e3o sobre a malha",
+                            icon="TOOL_SETTINGS"
+                        )
+        
         if diag.vertices > 0 and diag.health_analyzed:
             if diag.health_valid:
                 box.label(text="Malha sem problemas detectados", icon="CHECKMARK")
@@ -49,6 +53,7 @@ class ACO_PT_OrthosisPrepareModel(bpy.types.Panel):
         box = layout.box()
         box.label(text="Orienta\u00e7\u00e3o do modelo", icon="ORIENTATION_GLOBAL")
 
+        
         center_row = box.row(align=True)
         center_row.scale_y = 1.15
         center_row.operator(
@@ -122,29 +127,7 @@ class ACO_PT_OrthosisPrepareModel(bpy.types.Panel):
                 apply_row = box.row(align=True)
                 apply_row.operator("aco.repair_mesh", text="Reparar malha", icon="CHECKMARK")
 
-                self._draw_repair_result(box, scene)
 
-    def _draw_repair_result(self, layout, scene):
-        box = layout.box()
-        box.label(text="Resultado do reparo", icon="INFO")
-        repair = scene.aco_repair
-
-        row_before = box.row(align=True)
-        row_before.label(text="Volume antes")
-        row_before.label(text=f"{repair.volume_before:.4f} BU\u00b3")
-
-        row_after = box.row(align=True)
-        row_after.label(text="Volume depois")
-        row_after.label(text=f"{repair.volume_after:.4f} BU\u00b3")
-
-        row_change = box.row(align=True)
-        row_change.label(text="Varia\u00e7\u00e3o")
-        if repair.volume_valid:
-            row_change.label(text=f"{repair.volume_change_percent:+.2f}%")
-            box.label(text=self._cleanup_interpretation(repair.volume_change_percent), icon="CHECKMARK")
-        else:
-            row_change.label(text="N/A")
-            box.label(text="Volume indispon\u00edvel para esta malha.", icon="ERROR")
 
     # -------------------------------------------------------------------------
     # Limpeza automática (Quad Remesh)
@@ -179,29 +162,9 @@ class ACO_PT_OrthosisPrepareModel(bpy.types.Panel):
             apply_row.operator_context = "EXEC_DEFAULT"
             apply_row.operator("aco.apply_quad_remesh", text="Aplicar Quad Remesh", icon="CHECKMARK")
 
-            self._draw_cleanup_result(box, scene)
-
-    def _draw_cleanup_result(self, layout, scene):
-        box = layout.box()
-        box.label(text="Resultado da limpeza", icon="INFO")
-        qr = scene.aco_quad_remesh
-
-        row_before = box.row(align=True)
-        row_before.label(text="Volume antes")
-        row_before.label(text=f"{qr.volume_before:.4f} BU\u00b3")
-
-        row_after = box.row(align=True)
-        row_after.label(text="Volume depois")
-        row_after.label(text=f"{qr.volume_after:.4f} BU\u00b3")
-
-        row_change = box.row(align=True)
-        row_change.label(text="Varia\u00e7\u00e3o")
-        if qr.volume_valid:
-            row_change.label(text=f"{qr.volume_change_percent:+.2f}%")
-            box.label(text=self._cleanup_interpretation(qr.volume_change_percent), icon="CHECKMARK")
-        else:
-            row_change.label(text="N/A")
-            box.label(text="Volume indispon\u00edvel para esta malha.", icon="ERROR")
+    
+            
+        
 
     # -------------------------------------------------------------------------
     # Redução avançada
@@ -304,29 +267,7 @@ class ACO_PT_OrthosisPrepareModel(bpy.types.Panel):
             if not has_any_step:
                 box.label(text="Marque ao menos uma etapa para aplicar.", icon="ERROR")
 
-            self._draw_reduction_result(box, scene)
-
-    def _draw_reduction_result(self, layout, scene):
-        box = layout.box()
-        box.label(text="Resultado da redu\u00e7\u00e3o", icon="INFO")
-        reduction = scene.aco_reduction
-
-        row_before = box.row(align=True)
-        row_before.label(text="Volume antes")
-        row_before.label(text=f"{reduction.volume_before:.4f} BU\u00b3")
-
-        row_after = box.row(align=True)
-        row_after.label(text="Volume depois")
-        row_after.label(text=f"{reduction.volume_after:.4f} BU\u00b3")
-
-        row_change = box.row(align=True)
-        row_change.label(text="Varia\u00e7\u00e3o")
-        if reduction.volume_valid:
-            row_change.label(text=f"{reduction.volume_change_percent:+.2f}%")
-            box.label(text=self._cleanup_interpretation(reduction.volume_change_percent), icon="CHECKMARK")
-        else:
-            row_change.label(text="N/A")
-            box.label(text="Volume indispon\u00edvel para esta malha.", icon="ERROR")
+        
 
     # -------------------------------------------------------------------------
     # draw()

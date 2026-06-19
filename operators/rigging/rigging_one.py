@@ -1,6 +1,6 @@
 import bpy
 from bpy.types import Operator
-from ..utils import points_for, change_mode, get_specifics_defs
+from ...utils import points_for, change_mode, get_specifics_defs
 
 class ACO_OT_rigging_one(Operator):
     bl_idname = "aco.finger_rigging"

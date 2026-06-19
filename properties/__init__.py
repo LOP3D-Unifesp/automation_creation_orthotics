@@ -4,19 +4,10 @@ from .mesh_reduction import MeshReductionProperties
 from .quad_remesh import QuadRemeshProperties
 from .repair import RepairProperties
 from .join_bones import FINGER_DEFS, NEXT_POINT_LABELS, AcoJointPoint, AcoRigHand
-
-CLASSES = (
-    AlignAxisProperties,
-    DiagnosticsProperties,
-    MeshReductionProperties,
-    QuadRemeshProperties,
-    RepairProperties,
-    AcoJointPoint, 
-    AcoRigHand
-)
+from .point_marker import PointMarkers, PointToScore
+from .processing_time import ProcessingTime_State, ProcessingTime
 
 __all__ = [
-    "CLASSES",
     "AlignAxisProperties",
     "DiagnosticsProperties",
     "MeshReductionProperties",
@@ -26,4 +17,8 @@ __all__ = [
     "AcoRigHand",
     "FINGER_DEFS", 
     "NEXT_POINT_LABELS",
+    "PointMarkers", 
+    "PointToScore",
+    "ProcessingTime_State", 
+    "ProcessingTime",
 ]

@@ -1,7 +1,7 @@
 import bpy 
 from bpy.types import Operator
 
-from ..utils import change_mode, get_defs
+from ...utils import change_mode, get_defs
 
 
 class ACO_OT_redo_finger_bone(Operator):
