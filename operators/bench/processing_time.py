@@ -22,7 +22,7 @@ class ACO_OT_processing_time_start(Operator):
  
         if event.type == 'TIMER':
             if not ts.paused:
-                ts.elapsed = ts.accumulated + (time.time() - ts.start_timestamp)
+                ts.elapsed = ts.accumulated + (time.monotonic() - ts.start_timestamp)
             if context.area:
                 context.area.tag_redraw()
  
@@ -42,7 +42,7 @@ class ACO_OT_processing_time_start(Operator):
         ts.paused = False
         ts.accumulated = 0.0
         ts.elapsed = 0.0
-        ts.start_timestamp = time.time()
+        ts.start_timestamp = time.monotonic()
  
         wm = context.window_manager
         self._timer = wm.event_timer_add(0.1, window=context.window)
@@ -68,10 +68,10 @@ class ACO_OT_toggle_pause(Operator):
     def execute(self, context):
         ts = context.scene.process_timer
         if ts.paused:
-            ts.start_timestamp = time.time()  # novo ponto de referência
+            ts.start_timestamp = time.monotonic()  # novo ponto de referência
             ts.paused = False
         else:
-            ts.accumulated += time.time() - ts.start_timestamp
+            ts.accumulated += time.monotonic() - ts.start_timestamp
             ts.paused = True
         return {'FINISHED'}
 
@@ -90,7 +90,7 @@ class ACO_OT_processing_time_stop(Operator):
  
         total = ts.accumulated
         if not ts.paused:
-            total += time.time() - ts.start_timestamp
+            total += time.monotonic() - ts.start_timestamp
  
         item = ts.log.add()
         item.task_type = ts.task_type
